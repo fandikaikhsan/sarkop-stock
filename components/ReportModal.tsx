@@ -10,9 +10,11 @@ interface ReportModalProps {
   report: string | null;
   isLoading: boolean;
   error: string | null;
+  pdfUrl?: string | null;
+  pdfFileName?: string | null;
 }
 
-const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, onGenerateReport, report, isLoading, error }) => {
+const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, onGenerateReport, report, isLoading, error, pdfUrl, pdfFileName }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -37,7 +39,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, onGenerateRe
 
   const handleSendWhatsApp = () => {
     if (report) {
-      const message = encodeURIComponent(report);
+      const extra = pdfFileName ? `\n\nPDF report: ${pdfFileName} (downloaded to your device)` : '';
+      const message = encodeURIComponent(report + extra);
       const url = `https://wa.me/${WHATSAPP_TARGET_NUMBER}?text=${message}`;
       window.open(url, '_blank', 'noopener,noreferrer');
     }
@@ -94,6 +97,11 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, onGenerateRe
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Generated Report:</h3>
                 <div className="whitespace-pre-wrap text-gray-700 text-sm leading-relaxed">{report}</div>
+                {pdfUrl && (
+                  <div className="mt-3 text-sm text-gray-600">
+                    PDF has been generated. You can download it and share via WhatsApp.
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -115,13 +123,24 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onClose, onGenerateRe
               {isLoading ? 'Generating...' : 'Generate Report'}
             </button>
           ) : (
-             <button
-              onClick={handleSendWhatsApp}
-              className="flex items-center justify-center gap-2 px-6 py-2 bg-[#25D366] text-white rounded-md hover:bg-[#1EBE57] font-semibold"
-            >
-              <WhatsappIcon />
-              Send via WhatsApp
-            </button>
+             <div className="flex flex-col sm:flex-row gap-3">
+               {pdfUrl && (
+                 <a
+                   href={pdfUrl}
+                   download={pdfFileName || 'stock-opname-report.pdf'}
+                   className="px-6 py-2 bg-white border border-gray-300 text-gray-800 rounded-md hover:bg-gray-100 font-semibold text-center"
+                 >
+                   Download PDF
+                 </a>
+               )}
+               <button
+                onClick={handleSendWhatsApp}
+                className="flex items-center justify-center gap-2 px-6 py-2 bg-[#25D366] text-white rounded-md hover:bg-[#1EBE57] font-semibold"
+               >
+                 <WhatsappIcon />
+                 Send via WhatsApp
+               </button>
+             </div>
           )}
         </footer>
       </div>

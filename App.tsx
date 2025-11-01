@@ -8,12 +8,15 @@ import ActionButton from './components/ActionButton';
 import { FormIcon, WhatsappIcon } from './components/Icons';
 import { SARKOP_FORM_URL } from './config';
 import Header from './components/Header';
+import { buildPdfRowsByDate, generatePdf } from './services/pdfService';
 
 const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [report, setReport] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfFileName, setPdfFileName] = useState<string | null>(null);
 
   const handleOpenForm = () => {
     window.open(SARKOP_FORM_URL, '_blank', 'noopener,noreferrer');
@@ -22,7 +25,9 @@ const App: React.FC = () => {
   const handleGenerateReport = useCallback(async (startDate: string, endDate: string) => {
     setIsLoading(true);
     setError(null);
-    setReport(null);
+  setReport(null);
+  setPdfUrl(null);
+  setPdfFileName(null);
 
     try {
       const data: StockRecord[] = await getStockData();
@@ -48,6 +53,13 @@ const App: React.FC = () => {
 
       const summary = await generateStockReportSummary(filteredData, startDate, endDate);
       setReport(summary);
+
+      // Build and generate PDF from actual sheet data for the selected range
+      const rowsByDate = buildPdfRowsByDate(data, startDate, endDate);
+      const { blob, fileName } = await generatePdf(rowsByDate, startDate, endDate);
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+      setPdfFileName(fileName);
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An unexpected error occurred. Please check the console.');
@@ -80,11 +92,15 @@ const App: React.FC = () => {
           setIsModalOpen(false);
           setReport(null);
           setError(null);
+          setPdfUrl(null);
+          setPdfFileName(null);
         }}
-        onGenerateReport={handleGenerateReport}
+            onGenerateReport={handleGenerateReport}
         report={report}
         isLoading={isLoading}
         error={error}
+            pdfUrl={pdfUrl}
+            pdfFileName={pdfFileName}
       />
        <footer className="absolute bottom-4 text-center text-white/70 text-sm">
         <p>&copy; {new Date().getFullYear()} Sarkop. All rights reserved.</p>

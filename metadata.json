@@ -1,0 +1,5 @@
+{
+  "name": "Sarkop Stock Monitoring",
+  "description": "A web application to monitor stock opname for the Sarkop restaurant. It allows users to access the stock form and generate daily reports summarized by AI to be sent via WhatsApp.",
+  "requestFramePermissions": []
+}

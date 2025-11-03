@@ -32,3 +32,13 @@ Notes:
 
 - WhatsApp Web doesn’t allow attaching files via URL, so the app opens WhatsApp with the summary text and a note that the PDF has been downloaded. Please attach the downloaded PDF manually in WhatsApp.
 - If multiple submissions exist on the same day, the latest entry for that day is used for the "Stock After" values.
+
+## New: Current Stock Report
+
+- Click "Check Current Stock Report" on the main page.
+- The modal loads data from the "Processing" sheet and shows a mobile-friendly table:
+   - Columns: Item, Condition, Current Qty, Minimum Restock
+   - Sorted by Condition in the order: bahaya, low, normal
+- Generate a PDF report with title "Kebutuhan Restock Barang Sarkop tanggal [timestamp - staff]" and table columns: Item, Condition, Current Qty, Vendor, Category, Restock Needed.
+- Contact Supplier: opens a panel grouping items that need restock (Current Qty <= Minimum Restock) by Vendor with pre-filled WhatsApp messages.
+   - Optional: set `VENDOR_PHONE_NUMBERS` in `config.ts` to map vendor names to WhatsApp numbers (include country code without `+`). If not set, generic WhatsApp Web will open with the message ready to paste.

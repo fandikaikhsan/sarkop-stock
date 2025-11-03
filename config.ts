@@ -18,6 +18,14 @@ export const GOOGLE_SHEET_ID: string =
 // 2. Example: 'Form responses 1'!A:ZZ to read all data from the sheet named "Form responses 1".
 export const GOOGLE_SHEET_RANGE: string = "Form responses 1!A:ZZ" // <-- IMPORTANT: Replace with your sheet name and range
 
+// Second sheet used by the Current Stock feature
+export const GOOGLE_SHEET_PROCESSING_RANGE: string = "Processing!A:ZZ"
+export const GOOGLE_SHEET_SUPPLIER_RANGE: string = "Supplier!A:ZZ"
+
+// Optional: Map vendor names to WhatsApp numbers (include country code without '+' or '00').
+// Example: { 'PT. Supplier Abadi': '6281234567890' }
+export const VENDOR_PHONE_NUMBERS: Record<string, string> = {}
+
 // NOTE on API Key and Permissions:
 // The process.env.API_KEY used for the Gemini API will also be used here.
 // For this to work, you must:

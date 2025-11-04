@@ -1,12 +1,24 @@
-import { StockRecord, CurrentStockItem, LatestMeta, SupplierContact } from "../types"
-import { GOOGLE_SHEET_ID, GOOGLE_SHEET_RANGE, GOOGLE_SHEET_PROCESSING_RANGE, GOOGLE_SHEET_SUPPLIER_RANGE } from "../config"
+import {
+  StockRecord,
+  CurrentStockItem,
+  LatestMeta,
+  SupplierContact,
+} from "../types"
+import {
+  GOOGLE_SHEET_ID,
+  GOOGLE_SHEET_RANGE,
+  GOOGLE_SHEET_PROCESSING_RANGE,
+  GOOGLE_SHEET_SUPPLIER_RANGE,
+} from "../config"
 
 // const API_KEY = process.env.API_KEY as string;
 const API_KEY = "AIzaSyCuC6XdW805Ve5osrtyfwpPIZWGuqsoq-4"
 const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${GOOGLE_SHEET_RANGE}?key=${API_KEY}`
 
 const buildApiUrl = (range: string) =>
-  `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${encodeURIComponent(range)}?key=${API_KEY}`
+  `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/${encodeURIComponent(
+    range
+  )}?key=${API_KEY}`
 
 /**
  * Fetches and parses stock data from the configured Google Sheet.
@@ -70,7 +82,9 @@ const fetchSheetRecords = async (range: string): Promise<StockRecord[]> => {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
     console.error("Error fetching range", range, errorData)
-    throw new Error(`Failed to fetch sheet range ${range} (status ${response.status})`)
+    throw new Error(
+      `Failed to fetch sheet range ${range} (status ${response.status})`
+    )
   }
   const result = await response.json()
   const values: string[][] = result.values || []
@@ -97,7 +111,9 @@ export const getProcessingData = async (): Promise<CurrentStockItem[]> => {
     const vendor = r["Vendor"] || r["vendor"] || ""
     const category = r["Category"] || r["category"] || ""
     const parQty = Number(r["Par Qty"] || r["Par"] || r["ParQty"] || 0)
-    const minRestock = Number(r["Minimum Restock"] || r["Min Restock"] || r["Minimum"] || 0)
+    const minRestock = Number(
+      r["Minimum Restock"] || r["Min Restock"] || r["Minimum"] || 0
+    )
     const currentQty = Number(r["Current Qty"] || r["Current"] || r["Qty"] || 0)
 
     // Compute condition as per spec regardless of provided value
@@ -105,7 +121,16 @@ export const getProcessingData = async (): Promise<CurrentStockItem[]> => {
     if (parQty > 0 && currentQty <= parQty * 0.5) condition = "bahaya"
     else if (currentQty <= minRestock) condition = "low"
 
-    return { item, unit, vendor, category, parQty, minRestock, currentQty, condition }
+    return {
+      item,
+      unit,
+      vendor,
+      category,
+      parQty,
+      minRestock,
+      currentQty,
+      condition,
+    }
   })
 }
 

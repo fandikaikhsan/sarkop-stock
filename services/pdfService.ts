@@ -1,6 +1,11 @@
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
-import { StockRecord, CurrentStockItem, LatestMeta, SupplierContact } from "../types"
+import {
+  StockRecord,
+  CurrentStockItem,
+  LatestMeta,
+  SupplierContact,
+} from "../types"
 
 type ItemRow = {
   itemName: string
@@ -28,7 +33,10 @@ const parseTimestamp = (ts: string): Date | null => {
 const ymd = (d: Date) => d.toISOString().split("T")[0]
 
 const isMetaKey = (key: string) =>
-  key === TIMESTAMP_KEY || key === EMAIL_KEY || key === STAFF_KEY || key.startsWith("Column")
+  key === TIMESTAMP_KEY ||
+  key === EMAIL_KEY ||
+  key === STAFF_KEY ||
+  key.startsWith("Column")
 
 // From one stock record, extract item->value pairs (column D and beyond)
 const extractItems = (record: StockRecord): Record<string, string> => {
@@ -154,7 +162,10 @@ export const generatePdf = async (
     })
   }
 
-  const fileName = `stock-opname-${startDate.replace(/-/g, "")}-${endDate.replace(/-/g, "")}.pdf`
+  const fileName = `stock-opname-${startDate.replace(
+    /-/g,
+    ""
+  )}-${endDate.replace(/-/g, "")}.pdf`
   const blob = doc.output("blob")
   return { blob, fileName }
 }
@@ -170,11 +181,15 @@ export const generateCurrentStockPdf = async (
 
   const titleBase = "Kebutuhan Restock Barang Sarkop"
   const title = latest?.timestamp
-    ? `${titleBase} tanggal ${latest.timestamp}${latest.staff ? ` - ${latest.staff}` : ""}`
+    ? `${titleBase} tanggal ${latest.timestamp}${
+        latest.staff ? ` - ${latest.staff}` : ""
+      }`
     : titleBase
 
   const priority = (c: string) => (c === "bahaya" ? 0 : c === "low" ? 1 : 2)
-  const sorted = [...items].sort((a, b) => priority(a.condition) - priority(b.condition))
+  const sorted = [...items].sort(
+    (a, b) => priority(a.condition) - priority(b.condition)
+  )
 
   // Part 1: Main table (Item, Current Qty, Par Qty, Minimum Restock, Unit) with highlights
   doc.setFontSize(16)
@@ -182,8 +197,16 @@ export const generateCurrentStockPdf = async (
   doc.setFontSize(12)
   doc.text("Ringkasan Stok Saat Ini", 40, 60)
 
-  const mainHead = [["Item", "Current Qty", "Par Qty", "Minimum Restock", "Unit"]]
-  const mainBody = sorted.map((i) => [i.item, String(i.currentQty), String(i.parQty), String(i.minRestock), i.unit])
+  const mainHead = [
+    ["Item", "Current Qty", "Par Qty", "Minimum Restock", "Unit"],
+  ]
+  const mainBody = sorted.map((i) => [
+    i.item,
+    String(i.currentQty),
+    String(i.parQty),
+    String(i.minRestock),
+    i.unit,
+  ])
 
   autoTable(doc, {
     startY: 80,
@@ -194,12 +217,12 @@ export const generateCurrentStockPdf = async (
     alternateRowStyles: { fillColor: [248, 248, 248] },
     margin: { left: 40, right: 40 },
     didParseCell: (data) => {
-      if (data.section === 'body') {
+      if (data.section === "body") {
         const idx = data.row.index
         const cond = sorted[idx].condition
-        if (cond === 'bahaya') {
+        if (cond === "bahaya") {
           data.cell.styles.fillColor = [255, 204, 153] // light orange
-        } else if (cond === 'low') {
+        } else if (cond === "low") {
           data.cell.styles.fillColor = [255, 255, 153] // light yellow
         }
       }
@@ -207,18 +230,20 @@ export const generateCurrentStockPdf = async (
   })
 
   // Part 2: Restock tables grouped by vendor
-  const restockItems = sorted.filter((i) => i.currentQty < i.parQty || i.condition !== '-')
+  const restockItems = sorted.filter(
+    (i) => i.currentQty < i.parQty || i.condition !== "-"
+  )
   const byVendor = new Map<string, CurrentStockItem[]>()
   for (const it of restockItems) {
-    const v = it.vendor || 'Tanpa Vendor'
+    const v = it.vendor || "Tanpa Vendor"
     if (!byVendor.has(v)) byVendor.set(v, [])
     byVendor.get(v)!.push(it)
   }
 
   if (byVendor.size > 0) {
-    doc.addPage('a4', 'portrait')
+    doc.addPage("a4", "portrait")
     doc.setFontSize(14)
-    doc.text('Daftar Restock per Vendor', 40, 40)
+    doc.text("Daftar Restock per Vendor", 40, 40)
 
     const supplierMap = new Map<string, SupplierContact>()
     for (const s of suppliers) supplierMap.set(s.name, s)
@@ -227,33 +252,46 @@ export const generateCurrentStockPdf = async (
       // vendor subtitle with supplier info
       const s = supplierMap.get(vendor)
       doc.setFontSize(12)
-      const subtitle = `${vendor}${s ? ` • ${s.media || ''} ${s.phone || ''} ${s.alias || ''}` : ''}`.trim()
+      const subtitle = `${vendor}${
+        s ? ` • ${s.media || ""} ${s.phone || ""} ${s.alias || ""}` : ""
+      }`.trim()
       autoTable(doc, {
-        startY: (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 20 : 60,
+        startY: (doc as any).lastAutoTable
+          ? (doc as any).lastAutoTable.finalY + 20
+          : 60,
         head: [[subtitle]],
         body: [],
-        theme: 'plain',
+        theme: "plain",
         styles: { fontSize: 11 },
         margin: { left: 40, right: 40 },
       })
 
-      const vendorSorted = [...itemsOfVendor].sort((a, b) => priority(a.condition) - priority(b.condition))
+      const vendorSorted = [...itemsOfVendor].sort(
+        (a, b) => priority(a.condition) - priority(b.condition)
+      )
       const head = [["Item", "Current Qty", "Vendor", "Minimum Restock"]]
-      const body = vendorSorted.map((i) => [i.item, String(i.currentQty), vendor, String(i.minRestock)])
+      const body = vendorSorted.map((i) => [
+        i.item,
+        String(i.currentQty),
+        vendor,
+        String(i.minRestock),
+      ])
       autoTable(doc, {
-        startY: (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 6 : undefined,
+        startY: (doc as any).lastAutoTable
+          ? (doc as any).lastAutoTable.finalY + 6
+          : undefined,
         head,
         body,
         styles: { fontSize: 9, cellPadding: 4 },
         headStyles: { fillColor: [182, 67, 43], textColor: 255 },
         margin: { left: 40, right: 40 },
         didParseCell: (data) => {
-          if (data.section === 'body') {
+          if (data.section === "body") {
             const idx = data.row.index
             const cond = vendorSorted[idx].condition
-            if (cond === 'bahaya') {
+            if (cond === "bahaya") {
               data.cell.styles.fillColor = [255, 204, 153]
-            } else if (cond === 'low') {
+            } else if (cond === "low") {
               data.cell.styles.fillColor = [255, 255, 153]
             }
           }
@@ -261,13 +299,16 @@ export const generateCurrentStockPdf = async (
       })
 
       // Add page if the next table would overflow significantly
-      if ((doc as any).lastAutoTable && (doc as any).lastAutoTable.finalY > 740) {
-        doc.addPage('a4', 'portrait')
+      if (
+        (doc as any).lastAutoTable &&
+        (doc as any).lastAutoTable.finalY > 740
+      ) {
+        doc.addPage("a4", "portrait")
       }
     }
   }
 
   const fileName = `current-stock-${Date.now()}.pdf`
-  const blob = doc.output('blob')
+  const blob = doc.output("blob")
   return { blob, fileName }
 }

@@ -10,8 +10,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1WCDQ95j7EmRO4K2obahXdm
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
@@ -37,8 +36,8 @@ Notes:
 
 - Click "Check Current Stock Report" on the main page.
 - The modal loads data from the "Processing" sheet and shows a mobile-friendly table:
-   - Columns: Item, Condition, Current Qty, Minimum Restock
-   - Sorted by Condition in the order: bahaya, low, normal
+  - Columns: Item, Condition, Current Qty, Minimum Restock
+  - Sorted by Condition in the order: bahaya, low, normal
 - Generate a PDF report with title "Kebutuhan Restock Barang Sarkop tanggal [timestamp - staff]" and table columns: Item, Condition, Current Qty, Vendor, Category, Restock Needed.
 - Contact Supplier: opens a panel grouping items that need restock (Current Qty <= Minimum Restock) by Vendor with pre-filled WhatsApp messages.
-   - Optional: set `VENDOR_PHONE_NUMBERS` in `config.ts` to map vendor names to WhatsApp numbers (include country code without `+`). If not set, generic WhatsApp Web will open with the message ready to paste.
+  - Optional: set `VENDOR_PHONE_NUMBERS` in `config.ts` to map vendor names to WhatsApp numbers (include country code without `+`). If not set, generic WhatsApp Web will open with the message ready to paste.
